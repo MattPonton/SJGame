@@ -14,9 +14,9 @@
 *   + Added a finalStageCompleted boolean to note when Stage 9 has been marked for completion.  
 *   + Added Kamon Run setting logic to start function
 *   + Added split function to cause automatic split triggers
-*		+ In a Kamon Run: When Kamon count in inventory increments.
-*		+ When on the Final stage's Scoreboard.
-*		+ When Stage ID increments.
+*       + In a Kamon Run: When Kamon count in inventory increments.
+*       + When on the Final stage's Scoreboard.
+*       + When Stage ID increments.
 *
 * Fixed:
 *   + Renamed gameTimer to secondsTimer for clarity.
@@ -46,68 +46,65 @@ state("SJGAME-Win64-Shipping")
 {
     int secondsTimer: 0x3A2C610, 0x8, 0x710;
     float milliTimer: 0x3A2C610, 0x8, 0x714;
-	int kamon: 0x03a2c610, 0x8, 0xe80, 0x68, 0x18, 0x30, 0x0, 0x44;
-	int stageSelected: 0x03A2C610, 0x8, 0x164; // indexed
-	int checkpointCount: 0x03A2C610, 0x8, 0x1B0;
-	int finalScoreboard: 0x03AE5CF0, 0x8, 0x20, 0xB8, 0x268, 0x10, 0x2A0, 0x20, 0x28, 0xE0, 0x1D8;
+    int kamon: 0x03a2c610, 0x8, 0xe80, 0x68, 0x18, 0x30, 0x0, 0x44;
+    int stageSelected: 0x03A2C610, 0x8, 0x164; // indexed
+    int checkpointCount: 0x03A2C610, 0x8, 0x1B0;
+    int finalScoreboard: 0x03AE5CF0, 0x8, 0x20, 0xB8, 0x268, 0x10, 0x2A0, 0x20, 0x28, 0xE0, 0x1D8;
 }
 
 startup { 
-	settings.Add("kamonRun", false, "100% Kamon Run");
+    settings.Add("kamonRun", false, "100% Kamon Run");
 }
 
-init 
-{
+init {
     vars.totalTime = 0;
-	vars.finalStageCompleted = false;
+    vars.finalStageCompleted = false;
 }
 
-start
-{
-	vars.totalTime = 0;
-	vars.finalStageCompleted = false;
+start {
+    vars.totalTime = 0;
+    vars.finalStageCompleted = false;
 	
-    if(current.stageSelected == 0 && current.checkpointCount == 1 && current.secondsTimer == 0 && current.milliTimer > 0){
+    if(current.stageSelected == 0 && current.checkpointCount == 1 && current.secondsTimer == 0 && current.milliTimer > 0) {
         return settings["kamonRun"] ? current.kamon == 0 : true;
     }
 }
 
 split {
-	// If we're doing a Kamon Run, trigger a split when Kamon count increases
-	if (settings["kamonRun"] && current.kamon == old.kamon + 1) {
-		return true;
-	}
+    // If we're doing a Kamon Run, trigger a split when Kamon count increases
+    if (settings["kamonRun"] && current.kamon == old.kamon + 1) {
+        return true;
+    }
 
-	// Check if we've completed the final stage
-	if (!vars.finalStageCompleted) {
-		vars.finalStageCompleted = old.stageSelected == 8 && current.stageSelected == 8 
-			&& 0 < old.checkpointCount && old.checkpointCount <= 7 && current.checkpointCount == 0;
-	}
+    // Check if we've completed the final stage
+    if (!vars.finalStageCompleted) {
+        vars.finalStageCompleted = old.stageSelected == 8 && current.stageSelected == 8 
+            && 0 < old.checkpointCount && old.checkpointCount <= 7 && current.checkpointCount == 0;
+    }
 	
-	// Check if we're showing the final stage's scoreboard post credits.
-	if (vars.finalStageCompleted && current.finalScoreboard == 1) {
-		// Reset finalStageCompleted flag so that it doesn't split every run until end...
-		vars.finalStageCompleted = false;
+    // Check if we're showing the final stage's scoreboard post credits.
+    if (vars.finalStageCompleted && current.finalScoreboard == 1) {
+        // Reset finalStageCompleted flag so that it doesn't split every run until end...
+        vars.finalStageCompleted = false;
 		
-		// if in a kamonRun we don't want to end the run repeatedly should a kamon have been missed.
-		// The player would be required to defeat Aku again in order to end the run (to show the secret ending).
-		return settings["kamonRun"] ? current.kamon == 50 : true;
-	}
+        // if in a kamonRun we don't want to end the run repeatedly should a kamon have been missed.
+        // The player would be required to defeat Aku again in order to end the run (to show the secret ending).
+        return settings["kamonRun"] ? current.kamon == 50 : true;
+    }
 	
-	// With the exception of the final stage, split when player selects Next stage.
-	return current.stageSelected == old.stageSelected + 1;
+    // With the exception of the final stage, split when player selects Next stage.
+    return current.stageSelected == old.stageSelected + 1;
 }
 
-isLoading 
-{
+isLoading {
     return true;
 }
 
 gameTime {
-	// Calculate the 0.## in the format the game does.
-	current.milliTimer = Math.Floor(current.milliTimer * 100) / 100;
+    // Calculate the 0.## in the format the game does.
+    current.milliTimer = Math.Floor(current.milliTimer * 100) / 100;
 	
-	// Reloaded to previous checkpoint, so add time lost since that checkpoint.
+    // Reloaded to previous checkpoint, so add time lost since that checkpoint.
     if (current.secondsTimer < old.secondsTimer || (current.secondsTimer == old.secondsTimer && current.milliTimer < old.milliTimer)) {
         vars.totalTime += old.secondsTimer - current.secondsTimer + old.milliTimer - current.milliTimer;
     }
@@ -116,5 +113,5 @@ gameTime {
 }
 
 exit {
-	timer.IsGameTimePaused = true;
+    timer.IsGameTimePaused = true;
 }
