@@ -1,6 +1,15 @@
 /**
 * CREDITS
 *
+* Version: 2.1
+* Coder: PontonFSD
+* 
+* Fixed:
+*   + Corrected logic in the gameTime that erroneously reported time, adding a second when it shouldn't have.
+*
+* Known Bugs:
+*   - If Game Crashes or is exited, game time is reset to 0 and a split triggers when rebooted.
+*
 * Version: 2.0
 * Coder: PontonFSD
 * 
@@ -105,7 +114,7 @@ gameTime {
     current.milliTimer = Math.Floor(current.milliTimer * 100) / 100;
 	
     // Reloaded to previous checkpoint, so add time lost since that checkpoint.
-    if (current.secondsTimer < old.secondsTimer || (current.secondsTimer == old.secondsTimer && current.milliTimer < old.milliTimer)) {
+    if (current.secondsTimer < old.secondsTimer) {
         vars.totalTime += old.secondsTimer - current.secondsTimer + old.milliTimer - current.milliTimer;
     }
 	
