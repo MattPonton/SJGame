@@ -72,20 +72,20 @@ state("SJGAME-Win64-Shipping")
 
 startup { 
     settings.Add("kamonRun", false, "100% Kamon Run");
-	settings.Add("missionRun", false, "Mission Run");
+    settings.Add("missionRun", false, "Mission Run");
 }
 
 init {
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
-	vars.startedMission = false;
+    vars.startedMission = false;
 }
 
 start {
-	if (settings["missionRun"]) {
-		vars.startedMission = false;
-		return false;
-	}
+    if (settings["missionRun"]) {
+        vars.startedMission = false;
+        return false;
+    }
 	
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
@@ -96,7 +96,7 @@ start {
 }
 
 split {
-	if (settings["missionRun"]) return false;
+    if (settings["missionRun"]) return false;
 	
     // If we're doing a Kamon Run, trigger a split when Kamon count increases
     if (settings["kamonRun"] && current.kamon == old.kamon + 1) {
