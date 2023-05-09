@@ -1,6 +1,13 @@
 /**
 * CREDITS
 *
+* Version: 2.2
+* Coder: PontonFSD
+*
+* New Features:
+*   + Added Mission In-game Timer tracking for the Mission Run categories.
+*       + Start and Split will require a manual trigger.
+*
 * Version: 2.1
 * Coder: PontonFSD
 * 
@@ -59,18 +66,27 @@ state("SJGAME-Win64-Shipping")
     int stageSelected: 0x03A2C610, 0x8, 0x164; // indexed
     int checkpointCount: 0x03A2C610, 0x8, 0x1B0;
     int finalScoreboard: 0x03AE5CF0, 0x8, 0x20, 0xB8, 0x268, 0x10, 0x2A0, 0x20, 0x28, 0xE0, 0x1D8;
+    int missionSeconds: 0x03A2C610, 0x8, 0xD90;
+    float missionMilliseconds: 0x03A2C610, 0x8, 0xD94;
 }
 
 startup { 
     settings.Add("kamonRun", false, "100% Kamon Run");
+	settings.Add("missionRun", false, "Mission Run");
 }
 
 init {
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
+	vars.startedMission = false;
 }
 
 start {
+	if (settings["missionRun"]) {
+		vars.startedMission = false;
+		return false;
+	}
+	
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
 	
@@ -80,6 +96,8 @@ start {
 }
 
 split {
+	if (settings["missionRun"]) return false;
+	
     // If we're doing a Kamon Run, trigger a split when Kamon count increases
     if (settings["kamonRun"] && current.kamon == old.kamon + 1) {
         return true;
@@ -110,6 +128,27 @@ isLoading {
 }
 
 gameTime {
+    if (settings["missionRun"]) {		
+        // Try to avoid carrying over what's in memory of last run attempt...
+        if (!vars.startedMission) {
+            if (current.missionSeconds == 0 && old.missionSeconds == 0 && current.missionMilliseconds == 0 && old.missionMilliseconds == 0) {
+                vars.startedMission = true;
+                vars.totalTime = 0;
+            }
+	    return TimeSpan.FromSeconds(0.0f);
+	}
+		
+        // Floor the milliseconds like the game does
+        current.missionMilliseconds = Math.Floor(current.missionMilliseconds * 100) / 100;
+
+        // Carry over time if restarting or selecting new mission
+        if (current.missionSeconds < old.missionSeconds) {
+            vars.totalTime += old.missionSeconds - current.missionSeconds + old.missionMilliseconds - current.missionMilliseconds;
+        }
+		
+        return TimeSpan.FromSeconds(vars.totalTime + current.missionSeconds + current.missionMilliseconds);
+    }
+	
     // Calculate the 0.## in the format the game does.
     current.milliTimer = Math.Floor(current.milliTimer * 100) / 100;
 	
