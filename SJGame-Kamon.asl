@@ -1,6 +1,14 @@
 /**
 * CREDITS
 *
+* Version: 2.4
+* Coder: PontonFSD
+* 
+* Fixed:
+*   + The final split would still sometimes trigger prematurely.
+*		+ Added new endOfRunBuffer variable to delay the final split so that the final IGT calculations finish.
+*		+ Added new deltaTime variable to help count down the endOfRunBuffer variable.
+*
 * Version: 2.3
 * Coder: PontonFSD
 *
@@ -87,6 +95,8 @@ init {
     vars.finalStageCompleted = false;
     vars.videoLoaded = false;
     vars.startedMission = false;
+	vars.endOfRunBuffer = 1.0f; // All timings we've seen have been less than a second in the 0.3s range.
+	vars.deltaTime = 1f / refreshRate;
 }
 
 start {
@@ -124,7 +134,7 @@ split {
            && 0 < old.checkpointCount && old.checkpointCount <= 7 && current.checkpointCount == 0;
        
        // If final stage was completed, there's a frame of time where current & old time match
-       // before the IGT starts again then ends as cutscene begins.
+       // before the IGT starts again then ends as cutscene loads.
        return false;
     }
     
@@ -134,6 +144,10 @@ split {
         vars.videoLoaded = current.milliTimer == old.milliTimer;
 
         if (vars.videoLoaded) {
+			// Subtract the time.deltaTime from the endOfRunBuffer
+			vars.endOfRunBuffer = vars.endOfRunBuffer - vars.deltaTime;
+			if (vars.endOfRunBuffer > 0) return false;
+			
             // Reset flags so that it doesn't split every run until end...
             vars.finalStageCompleted = false;
             vars.videoLoaded = false;
