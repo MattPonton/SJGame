@@ -6,8 +6,8 @@
 * 
 * Fixed:
 *   + The final split would still sometimes trigger prematurely.
-*		+ Added new endOfRunBuffer variable to delay the final split so that the final IGT calculations finish.
-*		+ Added new deltaTime variable to help count down the endOfRunBuffer variable.
+*       + Added new endOfRunBuffer variable to delay the final split so that the final IGT calculations finish.
+*       + Added new deltaTime variable to help count down the endOfRunBuffer variable.
 *
 * Version: 2.3
 * Coder: PontonFSD
@@ -95,8 +95,8 @@ init {
     vars.finalStageCompleted = false;
     vars.videoLoaded = false;
     vars.startedMission = false;
-	vars.endOfRunBuffer = 1.0f; // All timings we've seen have been less than a second in the 0.3s range.
-	vars.deltaTime = 1f / refreshRate;
+    vars.endOfRunBuffer = 1.0f; // All timings we've seen have been less than a second in the 0.3s range.
+    vars.deltaTime = 1f / refreshRate;
 }
 
 start {
@@ -144,10 +144,10 @@ split {
         vars.videoLoaded = current.milliTimer == old.milliTimer;
 
         if (vars.videoLoaded) {
-			// Subtract the time.deltaTime from the endOfRunBuffer
-			vars.endOfRunBuffer = vars.endOfRunBuffer - vars.deltaTime;
-			if (vars.endOfRunBuffer > 0) return false;
-			
+            // Subtract the time.deltaTime from the endOfRunBuffer
+            vars.endOfRunBuffer = vars.endOfRunBuffer - vars.deltaTime;
+            if (vars.endOfRunBuffer > 0) return false;
+            
             // Reset flags so that it doesn't split every run until end...
             vars.finalStageCompleted = false;
             vars.videoLoaded = false;
