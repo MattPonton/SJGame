@@ -1,6 +1,15 @@
 /**
 * CREDITS
 *
+* Version: 2.5
+* Coder: PontonFSD
+*
+* Fixed:
+*  + Reset the endOfRunBuffer to 1.0f at the end of a run.
+*
+* To Do:
+*  + Add support for the Epic Games Store version of Samurai Jack: Battle Through Time.
+*
 * Version: 2.4
 * Coder: PontonFSD
 * 
@@ -151,6 +160,7 @@ split {
             // Reset flags so that it doesn't split every run until end...
             vars.finalStageCompleted = false;
             vars.videoLoaded = false;
+            vars.endOfRunBuffer = 1.0f;
             
             // if in a kamonRun we don't want to end the run repeatedly should a kamon have been missed.
             // The player would be required to defeat Aku again in order to end the run (to show the secret ending).
