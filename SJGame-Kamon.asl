@@ -1,6 +1,12 @@
 /**
 * CREDITS
 *
+* Version: 2.6
+* 
+* New Feature:
+*  + Added support for Epic Games Store version.
+*  + Left a print message in the case an unknown version is launched for easier addition later.
+*
 * Version: 2.5
 * Coder: PontonFSD
 *
@@ -81,7 +87,7 @@
 * Original release.
 **/
 
-state("SJGAME-Win64-Shipping") 
+state("SJGAME-Win64-Shipping", "Steam") 
 {
     int secondsTimer: 0x3A2C610, 0x8, 0x710;
     float milliTimer: 0x3A2C610, 0x8, 0x714;
@@ -94,12 +100,39 @@ state("SJGAME-Win64-Shipping")
     int missionScoreboard: 0x03A2C610, 0x8, 0x820, 0x548; // indexed
 }
 
+state("SJGAME-Win64-Shipping", "Epic")
+{
+    int secondsTimer: 0x39E0078, 0x8, 0x710;
+    float milliTimer: 0x39E0078, 0x8, 0x714;
+    int kamon: 0x39E0078, 0x8, 0xe80, 0x68, 0x18, 0x30, 0x0, 0x44;
+    int stageSelected: 0x39E0078, 0x8, 0x164; // indexed
+    int checkpointCount: 0x39E0078, 0x8, 0x1B0;
+    int stageScoreboard: 0x39E0078, 0x8, 0x194; // indexed
+    int missionSeconds: 0x39E0078, 0x8, 0xD90;
+    float missionMilliseconds: 0x39E0078, 0x8, 0xD94;
+    int missionScoreboard: 0x39E0078, 0x8, 0x820, 0x548; // indexed
+}
+
 startup { 
     settings.Add("kamonRun", false, "100% Kamon Run");
     settings.Add("missionRun", false, "Mission Run");
 }
 
 init {
+    switch(modules.First().ModuleMemorySize) {
+        case 65073152:
+            version = "Epic";
+            print("SJBTT: Using Epic Games Store version.");
+            break;
+        case 65617920:
+            version = "Steam";
+            print("SJBTT: Using Steam version.");
+            break;
+        default:
+            print("SJBTT: Unknown version <" + modules.First().ModuleMemorySize + ">.");
+            break;
+    }
+
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
     vars.videoLoaded = false;
