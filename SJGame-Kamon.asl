@@ -1,7 +1,14 @@
 /**
 * CREDITS
 *
+* Version: 2.7
+* Coder: PontonFSD
+* 
+* Fixed:
+*  + Altered logic to the endOfRunBuffer by waiting for 60 ticks before Stage 9 Scoreboard.
+*
 * Version: 2.6
+* Coder: PontonFSD
 * 
 * New Feature:
 *  + Added support for Epic Games Store version.
@@ -137,8 +144,7 @@ init {
     vars.finalStageCompleted = false;
     vars.videoLoaded = false;
     vars.startedMission = false;
-    vars.endOfRunBuffer = 1.0f; // All timings we've seen have been less than a second in the 0.3s range.
-    vars.deltaTime = 1f / refreshRate;
+    vars.endOfRunBuffer = 0; // All timings we've seen have been less than a second in the 0.3s range.
 }
 
 start {
@@ -149,6 +155,7 @@ start {
 
     vars.totalTime = 0;
     vars.finalStageCompleted = false;
+    vars.endOfRunBuffer = 0;
 
     if(current.stageSelected == 0 && current.checkpointCount == 1 && current.secondsTimer == 0 && current.milliTimer > 0) {
         return settings["kamonRun"] ? current.kamon == 0 : true;
@@ -186,14 +193,14 @@ split {
         vars.videoLoaded = current.milliTimer == old.milliTimer;
 
         if (vars.videoLoaded) {
-            // Subtract the time.deltaTime from the endOfRunBuffer
-            vars.endOfRunBuffer = vars.endOfRunBuffer - vars.deltaTime;
-            if (vars.endOfRunBuffer > 0) return false;
+            // Add a tick count to the endOfRunBuffer, and delay a full second to make sure to capture the end load.
+            vars.endOfRunBuffer++;
+            if (vars.endOfRunBuffer < 60) return false;
             
             // Reset flags so that it doesn't split every run until end...
             vars.finalStageCompleted = false;
             vars.videoLoaded = false;
-            vars.endOfRunBuffer = 1.0f;
+            vars.endOfRunBuffer = 0;
             
             // if in a kamonRun we don't want to end the run repeatedly should a kamon have been missed.
             // The player would be required to defeat Aku again in order to end the run (to show the secret ending).
