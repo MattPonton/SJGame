@@ -1,6 +1,14 @@
 /**
 * CREDITS
 *
+* Version: 2.8
+* Coders: ToxicPinHead & PontonFSD
+*
+* New Feature:
+*  + LiveSplit will now reset when the player returns to the beginning of Stage 1.
+*  + New setting has been added. Enabling the setting will allow for a reset to occur if player has returned
+*    to Stage 1 even while performing a 100% Kamon run.
+*
 * Version: 2.7
 * Coder: PontonFSD
 * 
@@ -122,6 +130,7 @@ state("SJGAME-Win64-Shipping", "Epic")
 
 startup { 
     settings.Add("kamonRun", false, "100% Kamon Run");
+    settings.Add("resetOnKamonRun", false, "Allow for auto-reset when restarting Stage 1 during a 100% Kamon Run");
     settings.Add("missionRun", false, "Mission Run");
 }
 
@@ -244,6 +253,14 @@ gameTime {
     }
 
     return TimeSpan.FromSeconds(vars.totalTime + current.secondsTimer + current.milliTimer);
+}
+
+reset
+{
+    if (old.checkpointCount == 0 && current.checkpointCount == 1 && current.stageSelected == 0)// resets if starting a new aku mines, so no mission mode resets
+    {
+        return !settings["kamonRun] || (settings["kamonRun"] && settings["resetOnKamonRun"]);
+    }
 }
 
 exit {
